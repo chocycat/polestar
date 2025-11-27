@@ -1,0 +1,25 @@
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 6c99b835ec95c49bb6d947668c5e6f4478bab6e1..85b1f4c8ffe8dc5f37d08777939f910ee91bb82b 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -37,7 +37,7 @@ const index = defineNuxtModule({
+         const addressInfo = server.address();
+         Object.assign(process.env, {
+           // This is required, and it is used in Electron-Main.
+-          VITE_DEV_SERVER_URL: `http://localhost:${addressInfo.port}`
++          VITE_DEV_SERVER_URL: `http://localhost:${listener.address.port}`
+         });
+         for (const config of options.build) {
+           config.vite ?? (config.vite = {});
+@@ -91,9 +91,9 @@ function adaptElectronConfig(options2, nuxt2) {
+   var _a, _b, _c;
+   if (!options2.disableDefaultOptions) {
+     nuxt2.options.ssr = false;
+-    nuxt2.options.app.baseURL = "./";
++    nuxt2.options.app.baseURL = "/";
+     nuxt2.options.app.buildAssetsDir = "/";
+-    nuxt2.options.runtimeConfig.app.baseURL = "./";
++    nuxt2.options.runtimeConfig.app.baseURL = "/";
+     nuxt2.options.runtimeConfig.app.buildAssetsDir = "/";
+     if (!nuxt2.options.dev) {
+       (_a = nuxt2.options.nitro).runtimeConfig ?? (_a.runtimeConfig = {});

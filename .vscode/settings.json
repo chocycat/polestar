@@ -1,0 +1,12 @@
+{
+  "editor.detectIndentation": false,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[vue]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+}

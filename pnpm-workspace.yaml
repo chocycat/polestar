@@ -1,0 +1,10 @@
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - electron
+  - electron-winstaller
+  - esbuild
+  - unrs-resolver
+  - usocket
+
+patchedDependencies:
+  nuxt-electron: patches/nuxt-electron.patch
