@@ -21,14 +21,16 @@ export async function createSearch() {
 
   win.center();
   win.removeMenu();
-  win.webContents.openDevTools({ mode: "detach" });
+  //win.webContents.openDevTools({ mode: "detach" });
   win.loadURL(process.env.VITE_DEV_SERVER_URL as string + '/search');
-
-  WINDOWS[Window.Search] = win;
 
   win.on('blur', () => {
     win.webContents.send('hide');
   })
+
+  WINDOWS[Window.Search] = win;
+
+  win.hide();
 
   return win;
 }

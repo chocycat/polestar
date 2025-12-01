@@ -24,7 +24,7 @@ export async function createBar() {
   });
 
   bar.removeMenu();
-  //bar.webContents.openDevTools({ mode: "detach" });
+  bar.webContents.openDevTools({ mode: "detach" });
   bar.loadURL(process.env.VITE_DEV_SERVER_URL as string + '/bar');
 
   WINDOWS[Window.Bar] = bar;

@@ -8,7 +8,7 @@ const { is = "div" } = defineProps<{
 <template>
   <Component
     :is="is"
-    class="widget flex bg-brand-surface justify-start items-center rounded-b-xl transform-origin-tc shadow-xl shadow-black/10"
+    class="widget flex bg-brand-surface justify-start items-center rounded-b-xl transform-origin-tc shadow-xl shadow-black/10 translate-z-0"
     :class="skew === 'left' ? 'skew-x-12' : '-skew-x-12'"
   >
     <div class="content w-fit transform-origin-b" :class="`skew-${skew}`">

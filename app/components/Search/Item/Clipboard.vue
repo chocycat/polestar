@@ -22,12 +22,18 @@ if (Math.abs(date.value.diffNow("hours").hours) < 24) {
     >
       {{ item.content.text.trim() }}
     </div>
+    <div v-else-if="item.content?.type === 'image'" class="content relative w-full h-full mx-auto pb-2">
+      <img :src="item.content.src" class="rounded-lg h-full w-auto max-w-full min-h-0 min-w-0 shadow-lg shadow-brand-background/50" />
+    </div>
     <div class="footer">
       <template v-if="item.content?.type === 'text'">
         {{ item.content.characters }}
         character{{ item.content.characters > 1 ? "s" : "" }} •
         {{ item.content.words }} word{{ item.content.words > 1 ? "s" : "" }}
         •
+      </template>
+      <template v-else-if="item.content?.type === 'image'">
+        {{ item.content.size }} • {{ item.content.dimensions }}
       </template>
       {{ formattedDate }}
     </div>
@@ -39,7 +45,7 @@ if (Math.abs(date.value.diffNow("hours").hours) < 24) {
   @apply p-3;
 
   .footer {
-    @apply flex items-center gap-2 text-brand-subtle text-xs mt-1;
+    @apply flex items-center gap-2 text-brand-subtle text-xs mt-2;
   }
 }
 </style>

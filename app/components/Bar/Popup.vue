@@ -2,10 +2,15 @@
 import { animate, spring, utils } from "animejs";
 import BarExpander from "./Expander.vue";
 
-const { id, is = "div" } = defineProps<{
+const {
+  id,
+  is = "div",
+  animateWidth = true,
+} = defineProps<{
   is?: string | Component;
   id: string;
   skew: "right" | "left";
+  animateWidth?: boolean;
 }>();
 const { openWidget } = storeToRefs(useBar());
 
@@ -15,10 +20,14 @@ const isOpen = computed(() => openWidget.value === id);
 function enter(target: Element, onComplete: () => void) {
   nextTick(() => {
     animate(target, {
-      width: {
-        from: 0,
-        ease: spring({ bounce: 0.15, duration: 200 }),
-      },
+      ...(animateWidth
+        ? {
+            width: {
+              from: 0,
+              ease: spring({ bounce: 0.15, duration: 200 }),
+            },
+          }
+        : {}),
       height: { from: 0 },
       opacity: { from: 0 },
       filter: { from: "blur(32px)" },
@@ -36,7 +45,7 @@ function enter(target: Element, onComplete: () => void) {
 
 function leave(target: Element, onComplete: () => void) {
   animate(target, {
-    width: { to: 0, duration: 500 },
+    ...(animateWidth ? { width: { to: 0, duration: 500 } } : {}),
     height: { to: 0 },
     opacity: { to: 0 },
     filter: { to: "blur(32px)" },

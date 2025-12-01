@@ -1,5 +1,5 @@
 import { exec, execSync, spawn } from "node:child_process";
-import { BrowserWindow, ipcMain, IpcMainEvent } from "electron";
+import { BrowserWindow, ipcMain, IpcMainEvent, screen } from "electron";
 import { Window, WINDOWS } from "./windows";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { closeNotification, invokeAction } from "./notification";
@@ -8,6 +8,7 @@ import { basename, join } from "node:path";
 import ini from "ini";
 import { clipboard } from "electron";
 import { search } from "./dictionary";
+import { clean, download, getVideoInfo } from "./yt";
 
 let cpuPrevIdle = 0,
   cpuPrevTotal = 0;
@@ -26,12 +27,18 @@ export function registerEvents() {
     BrowserWindow.fromWebContents(ev.sender)?.hide();
   });
 
-  ipcMain.on("cmd", (_, cmd: string) => {
-    exec(cmd);
+  ipcMain.handle("cmd", (_, cmd: string) => {
+    return new Promise<string>((resolve, reject) => {
+      exec(cmd, (err, stdout) => {
+        if (err) resolve(err.message);
+        resolve(stdout);
+      });
+    });
   });
 
   ipcMain.on("spawn", (_, cmd: string, args: string[]) => {
     const child = spawn(cmd, args ?? [], {
+      cwd: homeDir,
       detached: true,
       stdio: "ignore",
       shell: true,
@@ -92,6 +99,11 @@ export function registerEvents() {
     };
   });
 
+  const cava = spawn("cava");
+  cava.stdout.on("data", (data) => {
+    WINDOWS[Window.Bar].webContents.send("music", data.toString());
+  })
+
   const pactl = spawn("pactl", ["subscribe"]);
   pactl.stdout.on("data", (data) => {
     const ev = data.toString();
@@ -105,6 +117,22 @@ export function registerEvents() {
 
   ipcMain.handle('dictionary', async (_, word: string, limit?: number) => {
     return search(word, limit)
+  })
+
+  ipcMain.handle('yt/lookup', async (_, url: string) => {
+    return await getVideoInfo(url);
+  })
+
+  ipcMain.handle('yt/download', async (_, url: string, id: string, output: string) => {
+    return await download(url, id, output);
+  })
+
+  ipcMain.on('yt/cleanup', async(_, path: string) => {
+    return await clean(path);
+  })
+
+  ipcMain.handle('screens', async (_) => {
+    return screen.getAllDisplays();
   })
 
   ipcMain.handle('xdg/resolveIcon', async (_, name: string, size?: number) => {

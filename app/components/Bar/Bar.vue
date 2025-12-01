@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { animate, createTimeline, JSAnimation, spring, stagger } from 'animejs';
 
-const DEBUG = false;
+const DEBUG = true;
 const bar = ref<HTMLElement>();
 
 const state = ref<'entering' | 'leaving' | 'none'>('none');
@@ -80,6 +80,7 @@ function mouseLeave() {
         <BarWorkspaces />
       </div>
       <div class="w-full flex justify-end gap-2">
+        <BarMusic />
         <BarClock />
         <BarNotifications />
         <BarCentre />

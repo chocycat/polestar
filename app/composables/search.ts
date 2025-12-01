@@ -7,7 +7,8 @@ import { useWindowSearch } from "./search/window";
 import { useStorage } from "@vueuse/core";
 import { useDictionary } from "./search/dictionary";
 import { useClipboardSearch } from "./search/clipboard";
-import SearchItemAction from '~/components/Search/Item/Action.vue';
+import SearchItemAction from "~/components/Search/Item/Action.vue";
+import { useYtSearch } from "./search/yt";
 
 export interface ApplicationEntry {
   id?: string;
@@ -38,7 +39,7 @@ export const useSearch = defineStore("search", () => {
   const apps = ref<ApplicationEntry[]>([]);
   const query = ref<string>("");
   const tab = ref<Tab>("Quick Search");
-  const lastUsed = useStorage<Record<string, Date>>('search/lastUsed', {});
+  const lastUsed = useStorage<Record<string, Date>>("search/lastUsed", {});
 
   const applications = useAppSearch(query, apps);
   const calculator = useCalculator(query);
@@ -46,51 +47,53 @@ export const useSearch = defineStore("search", () => {
   const windows = useWindowSearch(query);
   const dictionary = useDictionary(query);
   const clipboard = useClipboardSearch(query);
-  const web = useWebSearch(query, computed(() => {
-    if (dictionary.value.length > 0 || calculator.value.length > 0) return false;
-    return true;
-  }));
+  const yt = useYtSearch(query);
+  const web = useWebSearch(
+    query,
+    computed(() => {
+      if (dictionary.value.length > 0 || calculator.value.length > 0)
+        return false;
+      return true;
+    })
+  );
 
   const results = computed<Record<string, SearchResult[]>>(() => {
     if (tab.value === "Quick Search") {
       return {
-        ...(dictionary.value.length > 0 ? { Dictionary: dictionary.value } : {}),
-        ...(calculator.value.length > 0
-          ? { Calculator: calculator.value }
-          : {}),
-        ...(applications.value.length > 0
-          ? { Applications: applications.value }
-          : {}),
-        ...(web.value.length > 0
-          ? { "Web Search": web.value }
-          : {}),
-        ...(commands.value.length > 0 ? { Commands: commands.value } : {}),
-      };
+        YouTube: yt.value,
+        Dictionary: dictionary.value,
+        Calculator: calculator.value,
+        Applications: applications.value,
+        "Web Search": web.value,
+        Commands: commands.value,
+      } as Record<string, SearchResult[]>;
     } else if (tab.value === "Windows") {
       return {
-        ...(windows.value.length > 0 ? { Windows: windows.value } : {}),
+        Windows: windows.value,
       };
     } else if (tab.value === "Clipboard") {
       const { clipboard: clipboardEntries } = storeToRefs(useClipboardStore());
       const actions: SearchResult[] = [
-        clipboardEntries.value.length > 0 ? {
-          id: 'builtin/clipboard+clearAll',
-          component: h(SearchItemAction, {
-            name: 'Clear Clipboard History',
-            icon: 'ri:delete-bin-2-line',
-            callback: () => {
-              clipboardEntries.value = [];
-            },
-            closeOnCallback: false,
-            danger: true,
-          })
-        } : undefined,
+        clipboardEntries.value.length > 0
+          ? {
+              id: "builtin/clipboard+clearAll",
+              component: h(SearchItemAction, {
+                name: "Clear Clipboard History",
+                icon: "ri:delete-bin-2-line",
+                callback: () => {
+                  clipboardEntries.value = [];
+                },
+                closeOnCallback: false,
+                danger: true,
+              }),
+            }
+          : undefined,
       ].filter((x) => !!x);
 
       return {
-        ...(clipboard.value.length > 0 ? { Clipboard: clipboard.value } : {}),
-        ...(actions.length > 0 ? { Actions: actions } : {}),
-      }
+        Clipboard: clipboard.value,
+        Actions: actions,
+      };
     }
 
     return {};
