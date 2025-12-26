@@ -1,5 +1,5 @@
 {
-	"name": "nuxt-app",
+	"name": "polestar",
 	"type": "module",
 	"private": true,
 	"main": "dist-electron/main.js",

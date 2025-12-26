@@ -1,13 +1,18 @@
-# polestar
+# Polestar
 
 My opinionated system utility application.
 
-## Notes
+## Prerequisites
 
-Setting up polestar may require extra configuration on your end:
 - Ruby must be installed, along with the Gems `ruby-dbus` and `chunky_png`
 - `xdotool` and `xprop` must be available
-- [kado](https://github.com/chocycat/kado) and [cbd](https://github.com/chocycat/cbd) must be available
-- Move a profile picture to `public/img/pfp.png`
-- The dictionary feature will not work (and will likely crash the application) unless `resources/dictionary.db` exists. This can be dumped and converted from the macOS dictionary application. The expected database format is: `definitions.id|definitions.title|definitions.entry`.
-- Polestar depends a lot on custom awesomeWM functionality, so using it on another WM will prove to be difficult, unless you reimplement all of the features.
+- An IPC socket that relays information about your WM environment must be present. [See a reference implementation for this.](https://github.com/chocycat/dotfiles/blob/main/awesome/environment/ipc.lua)
+
+## Notes
+
+Setting up Polestar may require extra configuration on your end:
+
+- To enable clipboard history, [cbd](https://github.com/chocycat/cbd) must be available.
+- If you want to use the bar, it is recommended to use [kado](https://github.com/chocycat/kado). [See the reference configuration.](https://github.com/chocycat/dotfiles/blob/main/kado.toml)
+- The dictionary feature will not work unless `resources/dictionary.db` exists. [This can be dumped and converted from macOS dictionary files.](https://github.com/JadedTuna/apple-dictionary)
+  - If you plan on using another dictionary and wish to do the conversion yourself, the expected database format is: `definitions.id|definitions.title|definitions.entry`.
