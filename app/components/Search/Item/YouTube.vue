@@ -1,18 +1,24 @@
 <script lang="ts" setup>
-import { onKeyDown } from '@vueuse/core';
-import type { YtDlpInfo } from '~/composables/search/yt';
+import { onKeyDown } from "@vueuse/core";
+import type { YtDlpInfo } from "~/composables/search/yt";
 
-const {info, selected} = defineProps<{ info: YtDlpInfo | null; error: string | null; selected?: boolean }>();
+const { info, selected } = defineProps<{
+	info: YtDlpInfo | null;
+	error: string | null;
+	selected?: boolean;
+}>();
 
 onKeyDown("Enter", (ev) => {
-  if (selected && info) {
-    ev.preventDefault();
-    window.$electron.spawn(`$BROWSER "${encodeURI(`https://youtube.com/watch?v=${info.id}`)}"`);
+	if (selected && info) {
+		ev.preventDefault();
+		window.$electron.spawn(
+			`$BROWSER "${encodeURI(`https://youtube.com/watch?v=${info.id}`)}"`,
+		);
 
-    nextTick(() => {
-      window.dispatchEvent(new Event("hide"));
-    });
-  }
+		nextTick(() => {
+			window.dispatchEvent(new Event("hide"));
+		});
+	}
 });
 </script>
 

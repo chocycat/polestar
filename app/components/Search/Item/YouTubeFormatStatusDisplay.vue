@@ -2,20 +2,20 @@
 import { onKeyDown } from "@vueuse/core";
 import { animate, type JSAnimation } from "animejs";
 import {
-  useYtStore,
-  type YtDlpFormat,
-  type YtDlpInfo,
+	useYtStore,
+	type YtDlpFormat,
+	type YtDlpInfo,
 } from "~/composables/search/yt";
 
 const { info, format, selected } = defineProps<{
-  info: YtDlpInfo;
-  format: YtDlpFormat & { percent?: number };
-  selected?: boolean;
+	info: YtDlpInfo;
+	format: YtDlpFormat & { percent?: number };
+	selected?: boolean;
 }>();
 const { enter, leave } = useScaleTransition({
-  baseScale: 0.75,
-  blur: "8px",
-  absolute: false,
+	baseScale: 0.75,
+	blur: "8px",
+	absolute: false,
 });
 const { cancel } = useYtStore();
 
@@ -23,24 +23,24 @@ const progressEl = ref<HTMLElement>();
 
 let anim: JSAnimation;
 watch(
-  () => format.percent,
-  () => {
-    if (!progressEl.value) return;
+	() => format.percent,
+	() => {
+		if (!progressEl.value) return;
 
-    if (anim) anim.pause();
-    anim = animate(progressEl.value, {
-      width: `${format.percent}%`,
-      duration: 150,
-      ease: "outExpo",
-    });
-  }
+		if (anim) anim.pause();
+		anim = animate(progressEl.value, {
+			width: `${format.percent}%`,
+			duration: 150,
+			ease: "outExpo",
+		});
+	},
 );
 
 onKeyDown("Enter", (ev) => {
-  if (selected && info) {
-    ev.preventDefault();
-    cancel(info, format);
-  }
+	if (selected && info) {
+		ev.preventDefault();
+		cancel(info, format);
+	}
 });
 </script>
 

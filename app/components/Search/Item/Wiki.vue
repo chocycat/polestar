@@ -2,49 +2,49 @@
 import { onKeyDown } from "@vueuse/core";
 
 const { url, selected, extract } = defineProps<{
-  url: string;
-  title: string;
-  description: string;
-  extract: string;
-  thumbnail?: { source: string; width: string; height: string };
-  selected?: boolean;
+	url: string;
+	title: string;
+	description: string;
+	extract: string;
+	thumbnail?: { source: string; width: string; height: string };
+	selected?: boolean;
 }>();
 
 onKeyDown("Enter", (ev) => {
-  if (selected) {
-    ev.preventDefault();
-    window.$electron.spawn(`$BROWSER "${encodeURI(url)}"`);
+	if (selected) {
+		ev.preventDefault();
+		window.$electron.spawn(`$BROWSER "${encodeURI(url)}"`);
 
-    nextTick(() => {
-      window.dispatchEvent(new Event("hide"));
-    });
-  }
+		nextTick(() => {
+			window.dispatchEvent(new Event("hide"));
+		});
+	}
 });
 
 const sentence = computed(() => {
-  const sentences = extract.split(/(?<=[.!?])\s+/).filter((x) => x.trim());
-  if (sentences.length === 0) return extract;
-  
-  let result = '';
+	const sentences = extract.split(/(?<=[.!?])\s+/).filter((x) => x.trim());
+	if (sentences.length === 0) return extract;
 
-  for (let i = 0; i < sentences.length; i++) {
-    const sentence = sentences[i]?.trim();
+	let result = "";
 
-    if (i === 0) {
-      result = sentence!;
-      continue
-    }
+	for (let i = 0; i < sentences.length; i++) {
+		const sentence = sentences[i]?.trim();
 
-    const withNext = result + ' ' + sentence;
-    if (withNext.length <= 128) {
-      result = withNext;
-    } else {
-      break
-    }
-  }
+		if (i === 0) {
+			result = sentence!;
+			continue;
+		}
 
-  return result;
-})
+		const withNext = result + " " + sentence;
+		if (withNext.length <= 128) {
+			result = withNext;
+		} else {
+			break;
+		}
+	}
+
+	return result;
+});
 </script>
 
 <template>

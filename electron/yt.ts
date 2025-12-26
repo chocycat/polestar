@@ -3,131 +3,151 @@ import { BrowserWindow } from "electron";
 import { basename, dirname } from "node:path";
 import { promises as fs } from "node:fs";
 import { homedir } from "node:os";
+import config from "../config";
 
 interface YtDlpFormat {
-  format_id: string;
-  ext: string;
-  vcodec?: string;
-  acodec?: string;
-  filesize?: number;
-  filesize_approx?: number;
-  tbr?: number;
-  width?: number;
-  height?: number;
-  format_note?: string;
+	format_id: string;
+	ext: string;
+	vcodec?: string;
+	acodec?: string;
+	filesize?: number;
+	filesize_approx?: number;
+	tbr?: number;
+	width?: number;
+	height?: number;
+	format_note?: string;
 }
 
 interface YtDlpInfo {
-  id: string;
-  title: string;
-  formats: YtDlpFormat[];
-  thumbnail?: string;
+	id: string;
+	title: string;
+	formats: YtDlpFormat[];
+	thumbnail?: string;
 }
 
-const AUTH_ARGS = [
-  "--cookies-from-browser",
-  "chrome:~/.config/net.imput.helium/",
-];
+const AUTH_ARGS = ["--cookies-from-browser", config.ytDlp.browserPath];
 
 export function getVideoInfo(url: string): Promise<YtDlpInfo> {
-  return new Promise((resolve, reject) => {
-    const process = spawn("yt-dlp", [...AUTH_ARGS, "-J", url]);
+	return new Promise((resolve, reject) => {
+		const process = spawn("yt-dlpp", [...AUTH_ARGS, "-J", url]);
 
-    let stdout = "";
-    let stderr = "";
+		let stdout = "";
+		let stderr = "";
 
-    process.stdout.on("data", (data) => {
-      stdout += data.toString();
-    });
+		process.stdout.on("data", (data) => {
+			stdout += data.toString();
+		});
 
-    process.stderr.on("data", (data) => {
-      stderr += data.toString();
-    });
+		process.stderr.on("data", (data) => {
+			stderr += data.toString();
+		});
 
-    process.on("close", (code) => {
-      if (code !== 0) {
-        reject(new Error(stderr));
-        return;
-      }
+		process.on("error", () => {
+			reject("unavailable");
+		});
 
-      try {
-        resolve(JSON.parse(stdout));
-      } catch (e) {
-        reject(new Error("failed to parse output"));
-      }
-    });
-  });
+		process.on("close", (code) => {
+			if (code !== 0) {
+				reject(new Error(stderr));
+				return;
+			}
+
+			try {
+				resolve(JSON.parse(stdout));
+			} catch (e) {
+				reject(new Error("failed to parse output"));
+			}
+		});
+	});
 }
 
 export async function download(
-  url: string,
-  id: string,
-  output: string
+	url: string,
+	id: string,
+	output: string,
+	audio: boolean,
+	ac: AbortController,
 ): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const process = spawn("yt-dlp", [
-      ...AUTH_ARGS,
-      "--embed-thumbnail",
-      "--embed-metadata",
-      "--newline",
-      "--progress-template",
-      'download:{"status":"downloading","percent":"%(progress._percent_str)s"}',
-      "-f",
-      id,
-      "-o",
-      output,
-      url,
-    ]);
+	return new Promise((resolve, reject) => {
+		const process = spawn(
+			"yt-dlp",
+			[
+				...AUTH_ARGS,
+				"--embed-thumbnail",
+				...(audio
+					? [
+							"--convert-thumbnail",
+							"png",
+							"--ppa",
+							"ThumbnailsConvertor:-vf crop=\"'if(gt(ih,iw),iw,ih)':'if(gt(iw,ih),ih,iw)'\"",
+						]
+					: []),
+				"--parse-metadata",
+				"playlist_index:%(track_number)s",
+				"--embed-metadata",
+				"--newline",
+				"--no-part",
+				"--no-continue",
+				"--progress-template",
+				'download:{"status":"downloading","percent":"%(progress._percent_str)s"}',
+				...(audio ? ["-x", "--audio-format", "flac"] : ["-f", id]),
+				...config.ytDlp.extraArgs,
+				"-o",
+				output,
+				url,
+			],
+			{ signal: ac.signal },
+		);
 
-    let events = 0;
-    process.stdout.on("data", (data) => {
-      const line = data.toString().trim();
-      if (line.startsWith("{")) {
-        events++;
-        // the first progress event is invalid
-        if (events === 1) return;
+		let events = 0;
+		process.stdout.on("data", (data) => {
+			const line = data.toString().trim();
+			if (line.startsWith("{")) {
+				events++;
+				// the first progress event is invalid
+				if (events === 1) return;
 
-        try {
-          const progress = JSON.parse(line);
+				try {
+					const progress = JSON.parse(line);
 
-          BrowserWindow.getAllWindows().forEach((w) =>
-            w.webContents.send("yt/progress", { url, id, progress })
-          );
-        } catch {}
-      }
-    });
+					BrowserWindow.getAllWindows().forEach((w) => {
+						w.webContents.send("yt/progress", { url, id, progress });
+					});
+				} catch {}
+			}
+		});
 
-    process.stderr.on("data", (data) => {
-      console.log(data.toString());
-    });
+		process.stderr.on("data", (data) => {
+			console.log(data.toString());
+		});
 
-    process.on("close", (code) => {
-      if (code !== 0) {
-        reject(new Error("download failed"));
-        return;
-      }
+		process.on("close", (code) => {
+			if (code !== 0) {
+				reject(new Error("download failed"));
+				return;
+			}
 
-      resolve();
-    });
-  });
+			resolve();
+		});
+	});
 }
 
 export async function clean(path: string) {
-  path = path.replace('~', homedir())
+	path = path.replace("~", homedir());
 
-  const dir = dirname(path);
-  const filename = basename(path);
+	const dir = dirname(path);
+	const filename = basename(path);
 
-  try {
-    await fs.unlink(path);
-  } catch {}
+	try {
+		await fs.unlink(path);
+	} catch {}
 
-  try {
-    const files = await fs.readdir(dir);
-    const matches = files.filter((f) => f.startsWith(filename + "."));
+	try {
+		const files = await fs.readdir(dir);
+		const matches = files.filter((f) => f.startsWith(filename + "."));
 
-    await Promise.all(
-      matches.map((f) => fs.unlink(`${dir}/${f}`).catch(() => {}))
-    );
-  } catch {}
+		await Promise.all(
+			matches.map((f) => fs.unlink(`${dir}/${f}`).catch(() => {})),
+		);
+	} catch {}
 }

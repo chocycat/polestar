@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { debounce } from 'es-toolkit';
+import { debounce } from "es-toolkit";
 
 const { request } = useWindowHeight();
 
@@ -9,22 +9,22 @@ const root = ref<HTMLElement>();
 let cb: () => void;
 
 function update() {
-  nextTick(() => {
-    if (root.value) {
-      cb?.();
-      cb = request(id, root.value.clientHeight, false);
-    }
-  })
+	nextTick(() => {
+		if (root.value) {
+			cb?.();
+			cb = request(id, root.value.clientHeight, false);
+		}
+	});
 }
 
 onMounted(() => {
-  nextTick(() => {
-    update();
-  })
-})
+	nextTick(() => {
+		update();
+	});
+});
 
 onUnmounted(() => {
-  cb?.();
+	cb?.();
 });
 
 defineExpose({ update });

@@ -1,5 +1,7 @@
 <script lang="ts" setup>
-defineProps<{ keybinds: { type: 'text' | 'icon'; icon: string; label: string }[] }>();
+defineProps<{
+	keybinds: { type: "text" | "icon"; icon: string; label: string }[];
+}>();
 </script>
 
 <template>

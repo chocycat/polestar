@@ -4,93 +4,98 @@ import * as echarts from "echarts";
 import { eases } from "animejs";
 import { onKeyDown } from "@vueuse/core";
 
-const { result, selected } = defineProps<{ query: string; result: EvaluationResult, selected?: boolean }>();
+const { result, selected } = defineProps<{
+	query: string;
+	result: EvaluationResult;
+	selected?: boolean;
+}>();
 
-onKeyDown('Enter', (ev) => {
-  if (selected) {
-    ev.preventDefault();
-    // TODO: we need to create some kind of system for popups/deciding which value to copy
-    // for now, we'll default to reasonable ones
-    if (result.type === ResultType.Color) {
-      window.$electron.clipboard.write(result.color.hex);
-    } else {
-      window.$electron.clipboard.write(result.value)
-    }
-    
-    nextTick(() => {
-      window.dispatchEvent(new Event('hide'));
-    })
-  }
-})
+onKeyDown("Enter", (ev) => {
+	if (selected) {
+		ev.preventDefault();
+		// TODO: we need to create some kind of system for popups/deciding which value to copy
+		// for now, we'll default to reasonable ones
+		if (result.type === ResultType.Color) {
+			window.$electron.clipboard.write(result.color.hex);
+		} else {
+			window.$electron.clipboard.write(result.value);
+		}
+
+		nextTick(() => {
+			window.dispatchEvent(new Event("hide"));
+		});
+	}
+});
 
 const graph = ref<HTMLCanvasElement>();
 const header = computed(() => {
-  switch (result.type) {
-    case ResultType.Math:
-      return { label: "Calculation", icon: "ri:calculator-fill" };
-    case ResultType.Conversion:
-      return {
-        label: `Conversion • ${result.unit?.name}`,
-        icon: "ri:swap-box-fill",
-      };
-    case ResultType.Currency:
-      return {
-        label: `Exchange • updated ${result.lastUpdated?.toRelative()}`,
-        icon: "ri:token-swap-fill",
-      };
-    case ResultType.Time:
-      return { label: "Time", icon: "ri:time-fill" };
-    case ResultType.Date:
-      return { label: "Date", icon: "ri:calendar-2-fill" };
-    case ResultType.Color:
-      return { label: "Color", icon: "ri:palette-fill" };
-  }
+	switch (result.type) {
+		case ResultType.Math:
+			return { label: "Calculation", icon: "ri:calculator-fill" };
+		case ResultType.Conversion:
+			return {
+				label: `Conversion • ${result.unit?.name}`,
+				icon: "ri:swap-box-fill",
+			};
+		case ResultType.Currency:
+			return {
+				label: `Exchange • updated ${result.lastUpdated?.toRelative()}`,
+				icon: "ri:token-swap-fill",
+			};
+		case ResultType.Time:
+			return { label: "Time", icon: "ri:time-fill" };
+		case ResultType.Date:
+			return { label: "Date", icon: "ri:calendar-2-fill" };
+		case ResultType.Color:
+			return { label: "Color", icon: "ri:palette-fill" };
+	}
 });
 
 onMounted(() => {
-  refreshCanvas();
+	refreshCanvas();
 });
 
 function refreshCanvas() {
-  if (!graph.value || result.type !== ResultType.Currency || !result.graph) return;
+	if (!graph.value || result.type !== ResultType.Currency || !result.graph)
+		return;
 
-  const values = Object.values(result.graph);
-  const color = values[0]! > values[values.length - 1]! ? "#d77070" : "#70d783";
-  const chart = echarts.init(graph.value);
-  chart.setOption({
-    grid: {
-      left: 0,
-      right: 24,
-      top: 24,
-      bottom: 24,
-    },
-    xAxis: {
-      type: "time",
-      show: false,
-    },
-    yAxis: {
-      type: "value",
-      show: false,
-      scale: true,
-    },
-    series: [
-      {
-        type: "line",
-        smooth: true,
-        symbol: "none",
-        lineStyle: {
-          color,
-          width: 4,
-        },
-        areaStyle: {
-          opacity: 0,
-        },
-        data: Object.entries(result.graph),
-        animationDuration: 1000,
-        animationEasing: eases.inOutCubic,
-      },
-    ],
-  });
+	const values = Object.values(result.graph);
+	const color = values[0]! > values[values.length - 1]! ? "#d77070" : "#70d783";
+	const chart = echarts.init(graph.value);
+	chart.setOption({
+		grid: {
+			left: 0,
+			right: 24,
+			top: 24,
+			bottom: 24,
+		},
+		xAxis: {
+			type: "time",
+			show: false,
+		},
+		yAxis: {
+			type: "value",
+			show: false,
+			scale: true,
+		},
+		series: [
+			{
+				type: "line",
+				smooth: true,
+				symbol: "none",
+				lineStyle: {
+					color,
+					width: 4,
+				},
+				areaStyle: {
+					opacity: 0,
+				},
+				data: Object.entries(result.graph),
+				animationDuration: 1000,
+				animationEasing: eases.inOutCubic,
+			},
+		],
+	});
 }
 </script>
 
@@ -108,13 +113,14 @@ function refreshCanvas() {
     >
       <div
         class="preview outline outline-4 w-12 h-12 rounded-full"
-        :style="{ backgroundColor: result.color.hex, outlineColor: result.color.hex + '80' }"
+        :style="{
+          backgroundColor: result.color.hex,
+          outlineColor: result.color.hex + '80',
+        }"
       />
 
       <div class="flex flex-col">
-        <span class="font-semibold text-sm mb-1">{{
-          result.color.name
-        }}</span>
+        <span class="font-semibold text-sm mb-1">{{ result.color.name }}</span>
         <div class="flex gap-1.5 items-center text-xs">
           <span>{{ result.color.hex }}</span>
           •

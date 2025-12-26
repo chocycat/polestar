@@ -11,71 +11,71 @@ const caretLeft = ref(0);
 const showCaret = ref(false);
 
 const caretStyle = computed(() => ({
-  left: `${caretLeft.value}px`,
+	left: `${caretLeft.value}px`,
 }));
 
 const update = () => {
-  if (!input.value) {
-    showCaret.value = false;
-    return;
-  }
+	if (!input.value) {
+		showCaret.value = false;
+		return;
+	}
 
-  const el = input.value;
-  const pos = el.selectionStart;
-  const epos = el.selectionEnd;
-  if (pos === null || epos === null) {
-    showCaret.value = false;
-    return;
-  }
+	const el = input.value;
+	const pos = el.selectionStart;
+	const epos = el.selectionEnd;
+	if (pos === null || epos === null) {
+		showCaret.value = false;
+		return;
+	}
 
-  if (pos !== epos) {
-    showCaret.value = false;
-    return;
-  }
+	if (pos !== epos) {
+		showCaret.value = false;
+		return;
+	}
 
-  caretPosition.value = pos;
+	caretPosition.value = pos;
 
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
+	const canvas = document.createElement("canvas");
+	const ctx = canvas.getContext("2d");
 
-  if (!ctx) return;
+	if (!ctx) return;
 
-  const computed = window.getComputedStyle(el);
+	const computed = window.getComputedStyle(el);
 
-  const { fontSize, fontFamily, fontWeight, fontStyle, letterSpacing } =
-    computed;
-  ctx.font = [fontStyle, fontWeight, fontSize, fontFamily].join(" ");
+	const { fontSize, fontFamily, fontWeight, fontStyle, letterSpacing } =
+		computed;
+	ctx.font = [fontStyle, fontWeight, fontSize, fontFamily].join(" ");
 
-  if (letterSpacing !== "normal") {
-    ctx.letterSpacing = letterSpacing;
-  }
+	if (letterSpacing !== "normal") {
+		ctx.letterSpacing = letterSpacing;
+	}
 
-  const textBefore = (model.value || "").substring(0, pos);
-  const textWidth = ctx.measureText(textBefore).width;
+	const textBefore = (model.value || "").substring(0, pos);
+	const textWidth = ctx.measureText(textBefore).width;
 
-  const paddingLeft = parseFloat(computed.paddingLeft);
-  const paddingRight = parseFloat(computed.paddingRight);
+	const paddingLeft = parseFloat(computed.paddingLeft);
+	const paddingRight = parseFloat(computed.paddingRight);
 
-  const scrollLeft = el.scrollLeft;
-  let left = paddingLeft + textWidth - scrollLeft;
-  const visibleWidth = el.clientWidth - paddingLeft - paddingRight;
+	const scrollLeft = el.scrollLeft;
+	let left = paddingLeft + textWidth - scrollLeft;
+	const visibleWidth = el.clientWidth - paddingLeft - paddingRight;
 
-  const minLeft = paddingLeft;
-  const maxLeft = el.clientWidth - paddingRight - 1;
+	const minLeft = paddingLeft;
+	const maxLeft = el.clientWidth - paddingRight - 1;
 
-  left = Math.max(minLeft, Math.min(left, maxLeft));
+	left = Math.max(minLeft, Math.min(left, maxLeft));
 
-  if (textWidth - scrollLeft < 0 || textWidth - scrollLeft > visibleWidth) {
-    showCaret.value = false;
-  } else if (isFocused.value && pos === epos) {
-    showCaret.value = true;
-  }
+	if (textWidth - scrollLeft < 0 || textWidth - scrollLeft > visibleWidth) {
+		showCaret.value = false;
+	} else if (isFocused.value && pos === epos) {
+		showCaret.value = true;
+	}
 
-  caretLeft.value = left;
+	caretLeft.value = left;
 };
 
 const delayedUpdate = () => {
-  requestAnimationFrame(update);
+	requestAnimationFrame(update);
 };
 
 onMounted(update);
@@ -83,12 +83,12 @@ onMounted(update);
 watch(model, update);
 
 defineOptions({
-  inheritAttrs: false,
+	inheritAttrs: false,
 });
 
 defineExpose({
-  el: input,
-  focus: () => input.value?.focus(),
+	el: input,
+	focus: () => input.value?.focus(),
 });
 </script>
 

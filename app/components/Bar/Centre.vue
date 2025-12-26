@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import { useAudioState } from "~/composables/audio";
 
+const showAvatar = ref(true);
+
 const { outputVolume, outputMuted, inputVolume, inputMuted } = storeToRefs(
 	useAudioState(),
 );
@@ -9,8 +11,15 @@ const { outputVolume, outputMuted, inputVolume, inputMuted } = storeToRefs(
 <template>
   <BarPopup id="barCentre" is="button" class="centre" skew="right">
     <div class="w-auto h-[50px] flex gap-3 items-center pl-3 pr-4">
-      <div class="unskew rounded-full overflow-hidden w-6 h-6">
-        <img src="/img/pfp.png" class="object-cover">
+      <div
+        v-if="showAvatar"
+        class="unskew rounded-full overflow-hidden w-6 h-6"
+      >
+        <img
+          src="/img/avatar.png"
+          class="object-cover"
+          @error="showAvatar = false"
+        />
       </div>
 
       <h2 class="font-medium unskew">chocycat</h2>

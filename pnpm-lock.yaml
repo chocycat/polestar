@@ -25,9 +25,6 @@ importers:
       '@nuxt/icon':
         specifier: 2.0.0
         version: 2.0.0(magicast@0.3.5)(vite@7.1.7(@types/node@24.5.2)(jiti@2.6.0)(terser@5.44.0)(yaml@2.8.1))(vue@3.5.22(typescript@5.9.2))
-      '@openrouter/sdk':
-        specifier: ^0.1.27
-        version: 0.1.27
       '@pinia/nuxt':
         specifier: ^0.11.2
         version: 0.11.2(magicast@0.3.5)(pinia@3.0.3(typescript@5.9.2)(vue@3.5.22(typescript@5.9.2)))
@@ -831,9 +828,6 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
       vue: ^3.3.4
-
-  '@openrouter/sdk@0.1.27':
-    resolution: {integrity: sha512-RH//L10bSmc81q25zAZudiI4kNkLgxF2E+WU42vghp3N6TEvZ6F0jK7uT3tOxkEn91gzmMw9YVmDENy7SJsajQ==}
 
   '@oxc-minify/binding-android-arm64@0.87.0':
     resolution: {integrity: sha512-ZbJmAfXvNAamOSnXId3BiM3DiuzlD1isqKjtmRFb/hpvChHHA23FSPrFcO16w+ugZKg33sZ93FinFkKtlC4hww==}
@@ -5566,9 +5560,6 @@ packages:
     resolution: {integrity: sha512-zK7YHHz4ZXpW89AHXUPbQVGKI7uvkd3hzusTdotCg1UxyaVtg0zFJSTfW/Dq5f7OBBVnq6cZIaC8Ti4hb6dtCA==}
     engines: {node: '>= 14'}
 
-  zod@4.1.13:
-    resolution: {integrity: sha512-AvvthqfqrAhNH9dnfmrfKzX5upOdjUVJYFqNSlkmGf64gRaTzlPwz99IHYnVs28qYAybvAlBV+H7pn0saFY4Ig==}
-
   zrender@6.0.0:
     resolution: {integrity: sha512-41dFXEEXuJpNecuUQq6JlbybmnHaqqpGlbH1yxnA5V9MMP4SbohSVZsJIwz+zdjQXSSlR1Vc34EgH1zxyTDvhg==}
 
@@ -6658,10 +6649,6 @@ snapshots:
       - vti
       - vue-tsc
       - yaml
-
-  '@openrouter/sdk@0.1.27':
-    dependencies:
-      zod: 4.1.13
 
   '@oxc-minify/binding-android-arm64@0.87.0':
     optional: true
@@ -11839,8 +11826,6 @@ snapshots:
       archiver-utils: 5.0.2
       compress-commons: 6.0.2
       readable-stream: 4.7.0
-
-  zod@4.1.13: {}
 
   zrender@6.0.0:
     dependencies:

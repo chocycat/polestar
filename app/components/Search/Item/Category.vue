@@ -2,55 +2,55 @@
 import { animate, utils } from "animejs";
 
 const props = defineProps<{
-  name: string;
-  items: SearchResult[];
-  selected: string | null;
-  setSelected: (val: string) => void;
+	name: string;
+	items: SearchResult[];
+	selected: string | null;
+	setSelected: (val: string) => void;
 }>();
 
 function itemEnter(target: Element, onComplete: () => void) {
-  nextTick(() => {
-    nextTick(() => {
-      animate(target, {
-        opacity: { from: 0 },
-        filter: { from: "blur(16px)" },
-        scale: { from: 0.8 },
-        duration: 250,
-        ease: "outExpo",
-        onComplete: (self) => {
-          utils.cleanInlineStyles(self);
-          onComplete();
-        },
-      });
-    });
-  });
+	nextTick(() => {
+		nextTick(() => {
+			animate(target, {
+				opacity: { from: 0 },
+				filter: { from: "blur(16px)" },
+				scale: { from: 0.8 },
+				duration: 250,
+				ease: "outExpo",
+				onComplete: (self) => {
+					utils.cleanInlineStyles(self);
+					onComplete();
+				},
+			});
+		});
+	});
 }
 
 function beforeLeave(target: Element) {
-  const top = (target as HTMLElement).offsetTop;
-  const left = (target as HTMLElement).offsetLeft;
-  const { width, height } = (target as HTMLElement).getBoundingClientRect();
+	const top = (target as HTMLElement).offsetTop;
+	const left = (target as HTMLElement).offsetLeft;
+	const { width, height } = (target as HTMLElement).getBoundingClientRect();
 
-  (target as HTMLElement).style.setProperty("top", `${top}px`);
-  (target as HTMLElement).style.setProperty("left", `${left}px`);
-  (target as HTMLElement).style.setProperty("width", `${width}px`);
-  (target as HTMLElement).style.setProperty("height", `${height}px`);
+	(target as HTMLElement).style.setProperty("top", `${top}px`);
+	(target as HTMLElement).style.setProperty("left", `${left}px`);
+	(target as HTMLElement).style.setProperty("width", `${width}px`);
+	(target as HTMLElement).style.setProperty("height", `${height}px`);
 }
 
 function itemLeave(target: Element, onComplete: () => void) {
-  animate(target, {
-    position: "absolute",
-    zIndex: 0,
-    filter: "blur(16px)",
-    opacity: 0,
-    scale: 0.8,
-    duration: 250,
-    ease: "outQuad",
-    onComplete: (self) => {
-      utils.cleanInlineStyles(self);
-      onComplete();
-    },
-  });
+	animate(target, {
+		position: "absolute",
+		zIndex: 0,
+		filter: "blur(16px)",
+		opacity: 0,
+		scale: 0.8,
+		duration: 250,
+		ease: "outQuad",
+		onComplete: (self) => {
+			utils.cleanInlineStyles(self);
+			onComplete();
+		},
+	});
 }
 </script>
 

@@ -1,16 +1,16 @@
 <script lang="ts" setup>
 import { animate, spring, utils } from "animejs";
-import BarExpander from "./Expander.vue";
+import type BarExpander from "./Expander.vue";
 
 const {
-  id,
-  is = "div",
-  animateWidth = true,
+	id,
+	is = "div",
+	animateWidth = true,
 } = defineProps<{
-  is?: string | Component;
-  id: string;
-  skew: "right" | "left";
-  animateWidth?: boolean;
+	is?: string | Component;
+	id: string;
+	skew: "right" | "left";
+	animateWidth?: boolean;
 }>();
 const { openWidget } = storeToRefs(useBar());
 
@@ -18,46 +18,46 @@ const content = ref<InstanceType<typeof BarExpander>>();
 const isOpen = computed(() => openWidget.value === id);
 
 function enter(target: Element, onComplete: () => void) {
-  nextTick(() => {
-    animate(target, {
-      ...(animateWidth
-        ? {
-            width: {
-              from: 0,
-              ease: spring({ bounce: 0.15, duration: 200 }),
-            },
-          }
-        : {}),
-      height: { from: 0 },
-      opacity: { from: 0 },
-      filter: { from: "blur(32px)" },
-      scale: { from: 0.75 },
-      paddingBottom: { from: 0 },
-      duration: 250,
-      ease: "outExpo",
-      onComplete: (self) => {
-        utils.cleanInlineStyles(self);
-        onComplete();
-      },
-    });
-  });
+	nextTick(() => {
+		animate(target, {
+			...(animateWidth
+				? {
+						width: {
+							from: 0,
+							ease: spring({ bounce: 0.15, duration: 200 }),
+						},
+					}
+				: {}),
+			height: { from: 0 },
+			opacity: { from: 0 },
+			filter: { from: "blur(32px)" },
+			scale: { from: 0.75 },
+			paddingBottom: { from: 0 },
+			duration: 250,
+			ease: "outExpo",
+			onComplete: (self) => {
+				utils.cleanInlineStyles(self);
+				onComplete();
+			},
+		});
+	});
 }
 
 function leave(target: Element, onComplete: () => void) {
-  animate(target, {
-    ...(animateWidth ? { width: { to: 0, duration: 500 } } : {}),
-    height: { to: 0 },
-    opacity: { to: 0 },
-    filter: { to: "blur(32px)" },
-    scale: { to: 0.75 },
-    paddingBottom: { to: 0 },
-    duration: 250,
-    ease: "outExpo",
-    onComplete: (self) => {
-      utils.cleanInlineStyles(self);
-      onComplete();
-    },
-  });
+	animate(target, {
+		...(animateWidth ? { width: { to: 0, duration: 500 } } : {}),
+		height: { to: 0 },
+		opacity: { to: 0 },
+		filter: { to: "blur(32px)" },
+		scale: { to: 0.75 },
+		paddingBottom: { to: 0 },
+		duration: 250,
+		ease: "outExpo",
+		onComplete: (self) => {
+			utils.cleanInlineStyles(self);
+			onComplete();
+		},
+	});
 }
 
 defineExpose({ update: computed(() => content.value?.update) });

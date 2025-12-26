@@ -1,13 +1,13 @@
 <script lang="ts" setup>
 const { workspaces: _workspaces, activeScreen } = storeToRefs(useAwesome());
 const workspaces = computed(() =>
-  _workspaces.value.filter((x) => x.screen === activeScreen.value)
+	_workspaces.value.filter((x) => x.screen === activeScreen.value),
 );
 
 function select(workspace: Workspace) {
-  window.$electron.cmd(
-    `echo "__goto_tag(${workspace.screen}, ${workspace.index})" | awesome-client`
-  );
+	window.$electron.cmd(
+		`echo "__goto_tag(${workspace.screen}, ${workspace.index})" | awesome-client`,
+	);
 }
 </script>
 

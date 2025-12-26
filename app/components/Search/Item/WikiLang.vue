@@ -1,9 +1,19 @@
 <script lang="ts" setup>
-import { onKeyDown } from '@vueuse/core';
+import { onKeyDown } from "@vueuse/core";
 
-const { url, selected } = defineProps<{ title: string; language: string; url: string; selected?: boolean }>();
+const { url, selected } = defineProps<{
+  title: string;
+  language: string;
+  url: string;
+  selected?: boolean;
+}>();
 
-const { enter, leave } = useScaleTransition({ baseScale: 0.75, blur: '8px', absolute: false });
+const { enter, leave } = useScaleTransition({
+  baseScale: 0.75,
+  blur: "8px",
+  absolute: false,
+});
+
 const LANGUAGE_MAP: Record<string, string> = {
   simple: "Simple English",
   hu: "Hungarian",
@@ -30,7 +40,7 @@ onKeyDown("Enter", (ev) => {
     <span class="text-sm">Open article in {{ LANGUAGE_MAP[language] }}</span>
 
     <Transition @enter="enter" @leave="leave">
-      <div v-if="selected" class="h-4.5 text-[18px] ml-auto text-brand-subtle ">
+      <div v-if="selected" class="h-4.5 text-[18px] ml-auto text-brand-subtle">
         <Icon name="ri:external-link-line" class="align-top" />
       </div>
     </Transition>

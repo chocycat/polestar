@@ -7,10 +7,10 @@ const date = computed(() => DateTime.fromSeconds(item.timestamp));
 const formattedDate = ref<string>(date.value.toLocaleString(DateTime.DATE_MED));
 
 if (Math.abs(date.value.diffNow("hours").hours) < 24) {
-  formattedDate.value = date.value.toRelative()!;
-  useIntervalFn(() => {
-    formattedDate.value = date.value.toRelative()!;
-  }, 1000);
+	formattedDate.value = date.value.toRelative()!;
+	useIntervalFn(() => {
+		formattedDate.value = date.value.toRelative()!;
+	}, 1000);
 }
 </script>
 
@@ -18,12 +18,18 @@ if (Math.abs(date.value.diffNow("hours").hours) < 24) {
   <div class="clipboard">
     <div
       v-if="item.content?.type === 'text'"
-      class="content line-clamp-3 whitespace-pre max-w-full"
+      class="content line-clamp-3 whitespace-pre max-w-full text-ellipsis"
     >
       {{ item.content.text.trim() }}
     </div>
-    <div v-else-if="item.content?.type === 'image'" class="content relative w-full h-full mx-auto pb-2">
-      <img :src="item.content.src" class="rounded-lg h-full w-auto max-w-full min-h-0 min-w-0 shadow-lg shadow-brand-background/50" />
+    <div
+      v-else-if="item.content?.type === 'image'"
+      class="content relative w-full h-full mx-auto pb-2"
+    >
+      <img
+        :src="item.content.src"
+        class="rounded-lg h-full w-auto max-w-full min-h-0 min-w-0 shadow-lg shadow-brand-background/50"
+      />
     </div>
     <div class="footer">
       <template v-if="item.content?.type === 'text'">

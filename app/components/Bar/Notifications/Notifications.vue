@@ -1,14 +1,14 @@
 <script lang="ts" setup>
 import { animate, utils } from "animejs";
 import { sortBy } from "es-toolkit";
-import BarPopup from "../Popup.vue";
+import type BarPopup from "../Popup.vue";
 
 const { notifications: _notifications } = storeToRefs(useNotifications());
 const { close, clear } = useNotifications();
 const { enter: enterScale, leave: leaveScale } = useScaleTransition();
 
 const notifications = computed(() =>
-  sortBy(_notifications.value, [(n) => -n.id])
+	sortBy(_notifications.value, [(n) => -n.id]),
 );
 
 const popup = ref<InstanceType<typeof BarPopup>>();
@@ -21,52 +21,52 @@ const { height: listHeight } = useElementSize(notifList);
 const showBar = computed(() => listHeight.value > wrapperHeight.value);
 
 watch(
-  notifications,
-  () => {
-    nextTick(() => {
-      popup.value?.update?.();
-    });
-  },
-  { deep: true, flush: "post" }
+	notifications,
+	() => {
+		nextTick(() => {
+			popup.value?.update?.();
+		});
+	},
+	{ deep: true, flush: "post" },
 );
 
 function enter(target: Element, onComplete: () => void) {
-  animate(target, {
-    opacity: { from: 0 },
-    filter: { from: "blur(32px)" },
-    scale: { from: 1.25 },
-    duration: 250,
-    ease: "outExpo",
-    onComplete: (self) => {
-      utils.cleanInlineStyles(self);
-      onComplete();
-    },
-  });
+	animate(target, {
+		opacity: { from: 0 },
+		filter: { from: "blur(32px)" },
+		scale: { from: 1.25 },
+		duration: 250,
+		ease: "outExpo",
+		onComplete: (self) => {
+			utils.cleanInlineStyles(self);
+			onComplete();
+		},
+	});
 }
 
 function leave(target: Element, onComplete: () => void) {
-  const top = (target as HTMLElement).offsetTop;
-  const left = (target as HTMLElement).offsetLeft;
-  const { width, height } = (target as HTMLElement).getBoundingClientRect();
+	const top = (target as HTMLElement).offsetTop;
+	const left = (target as HTMLElement).offsetLeft;
+	const { width, height } = (target as HTMLElement).getBoundingClientRect();
 
-  (target as HTMLElement).style.setProperty("top", `${top}px`);
-  (target as HTMLElement).style.setProperty("left", `${left}px`);
-  (target as HTMLElement).style.setProperty("width", `${width}px`);
-  (target as HTMLElement).style.setProperty("height", `${height}px`);
+	(target as HTMLElement).style.setProperty("top", `${top}px`);
+	(target as HTMLElement).style.setProperty("left", `${left}px`);
+	(target as HTMLElement).style.setProperty("width", `${width}px`);
+	(target as HTMLElement).style.setProperty("height", `${height}px`);
 
-  animate(target, {
-    position: "absolute",
-    zIndex: 0,
-    filter: "blur(32px)",
-    opacity: 0,
-    scale: 0.75,
-    duration: 250,
-    ease: "outQuad",
-    onComplete: (self) => {
-      utils.cleanInlineStyles(self);
-      onComplete();
-    },
-  });
+	animate(target, {
+		position: "absolute",
+		zIndex: 0,
+		filter: "blur(32px)",
+		opacity: 0,
+		scale: 0.75,
+		duration: 250,
+		ease: "outQuad",
+		onComplete: (self) => {
+			utils.cleanInlineStyles(self);
+			onComplete();
+		},
+	});
 }
 </script>
 

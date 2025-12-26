@@ -1,15 +1,15 @@
 <script lang="ts" setup>
 import { onKeyDown } from "@vueuse/core";
-import { animate, JSAnimation, spring } from "animejs";
+import { animate, type JSAnimation, spring } from "animejs";
 
 export type Tab = "Quick Search" | "Windows" | "Clipboard";
 
 const TABS: Tab[] = ["Quick Search", "Windows", "Clipboard"];
 const ICON_MAP: Record<Tab, string> = {
-  'Quick Search': 'ri:search-fill',
-  'Windows': 'ri:window-2-fill',
-  'Clipboard': 'ri:clipboard-fill',
-}
+	"Quick Search": "ri:search-fill",
+	Windows: "ri:window-2-fill",
+	Clipboard: "ri:clipboard-fill",
+};
 
 const tab = defineModel<Tab>();
 
@@ -20,52 +20,49 @@ const anim = ref<JSAnimation | null>(null);
 watch(tab, () => nextTick(update), { immediate: true, flush: "post" });
 
 onMounted(() => {
-  update();
+	update();
 });
 
-onKeyDown("ArrowRight", (ev) => {
-  if (ev.shiftKey) {
-    const currIndex = TABS.findIndex((x) => x === tab.value);
-    if (currIndex === -1) return;
-    const nextIndex = currIndex + 1 === TABS.length ? 0 : currIndex + 1;
-    tab.value = TABS[nextIndex];
-  }
-});
+onKeyDown("Tab", (ev) => {
+	ev.preventDefault();
 
-onKeyDown("ArrowLeft", (ev) => {
-  if (ev.shiftKey) {
-    const currIndex = TABS.findIndex((x) => x === tab.value);
-    if (currIndex === -1) return;
-    const prevIndex = currIndex - 1 < 0 ? TABS.length - 1 : currIndex - 1;
-    tab.value = TABS[prevIndex];
-  }
+	if (ev.shiftKey) {
+		const currIndex = TABS.findIndex((x) => x === tab.value);
+		if (currIndex === -1) return;
+		const prevIndex = currIndex - 1 < 0 ? TABS.length - 1 : currIndex - 1;
+		tab.value = TABS[prevIndex];
+	} else {
+		const currIndex = TABS.findIndex((x) => x === tab.value);
+		if (currIndex === -1) return;
+		const nextIndex = currIndex + 1 === TABS.length ? 0 : currIndex + 1;
+		tab.value = TABS[nextIndex];
+	}
 });
 
 function update() {
-  const activeEl = document.querySelector(`.tab[data-tab="${tab.value}"]`);
+	const activeEl = document.querySelector(`.tab[data-tab="${tab.value}"]`);
 
-  nextTick(() => {
-    if (!activeEl || !line.value || !root.value) return;
+	nextTick(() => {
+		if (!activeEl || !line.value || !root.value) return;
 
-    const bounds = activeEl.getBoundingClientRect();
-    const rootBounds = root.value.getBoundingClientRect();
+		const bounds = activeEl.getBoundingClientRect();
+		const rootBounds = root.value.getBoundingClientRect();
 
-    anim.value?.cancel();
-    anim.value = animate(line.value, {
-      width: bounds.width,
-      left: {
-        to: bounds.left - rootBounds.left,
-        ease: spring({ bounce: 0.3, duration: 200 }),
-      },
-      duration: 200,
-      ease: "outExpo",
-      onComplete: () => {
-        anim.value = null;
-      },
-    });
-  });
+		anim.value?.cancel();
+		anim.value = animate(line.value, {
+			width: bounds.width,
+			left: {
+				to: bounds.left - rootBounds.left,
+				ease: spring({ bounce: 0.3, duration: 200 }),
+			},
+			duration: 200,
+			ease: "outExpo",
+			onComplete: () => {
+				anim.value = null;
+			},
+		});
+	});
 }
-
 </script>
 
 <template>

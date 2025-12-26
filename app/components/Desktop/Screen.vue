@@ -1,10 +1,13 @@
 <script lang="ts" setup>
 import type { Display } from "electron";
 import { DateTime } from "luxon";
+import config from "~~/config";
 
 defineProps<{ screen: Display }>();
 
 const now = useNow();
+const showWallpaper = ref(true);
+const wallpaper = ref(config.desktop.wallpaper);
 </script>
 
 <template>
@@ -28,7 +31,12 @@ const now = useNow();
       </div>
     </div>
 
-    <img src="/img/wp/wallpaper01.png" class="object-cover w-full h-full pointer-events-none" />
+    <img
+      v-if="showWallpaper"
+      :src="`/img/wallpaper/${wallpaper}`"
+      class="object-cover w-full h-full pointer-events-none"
+      @error="showWallpaper = false"
+    />
   </div>
 </template>
 

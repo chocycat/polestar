@@ -4,59 +4,59 @@ import { onKeyDown } from "@vueuse/core";
 const { query } = storeToRefs(useSearch());
 
 const { word, exact, selected, setSelected, match } = defineProps<{
-  word: { title: string; entry: string };
-  exact?: boolean;
-  selected?: boolean;
-  setSelected?: (val: string) => void;
-  match: string;
+	word: { title: string; entry: string };
+	exact?: boolean;
+	selected?: boolean;
+	setSelected?: (val: string) => void;
+	match: string;
 }>();
 
 onKeyDown("Enter", (ev) => {
-  if (selected) {
-    ev.preventDefault();
+	if (selected) {
+		ev.preventDefault();
 
-    if (!exact) {
-      query.value = `define ${word.title}`;
-    } else {
-      window.$electron.clipboard.write(word.title);
+		if (!exact) {
+			query.value = `define ${word.title}`;
+		} else {
+			window.$electron.clipboard.write(word.title);
 
-      nextTick(() => {
-        window.dispatchEvent(new Event("hide"));
-      });
-    }
-  }
+			nextTick(() => {
+				window.dispatchEvent(new Event("hide"));
+			});
+		}
+	}
 });
 
 function handleClick(ev: MouseEvent) {
-  const target = (ev.target as HTMLElement).closest("a");
-  if (!target) return;
+	const target = (ev.target as HTMLElement).closest("a");
+	if (!target) return;
 
-  const href = target.getAttribute("href");
-  if (!href || !href.startsWith("x-dictionary:")) return;
+	const href = target.getAttribute("href");
+	if (!href || !href.startsWith("x-dictionary:")) return;
 
-  ev.preventDefault();
+	ev.preventDefault();
 
-  const parts = href.split(":");
-  if (parts.length >= 3) {
-    const id = parts[2]!;
-    const title = parts[4]!;
+	const parts = href.split(":");
+	if (parts.length >= 3) {
+		const id = parts[2]!;
+		const title = parts[4]!;
 
-    // we are looking at the word we are searching for right now
-    // this might mean its referring to a different meaning instead
-    if (title === match && exact) {
-      setSelected?.(`${id}-${exact}`);
-      return;
-    }
+		// we are looking at the word we are searching for right now
+		// this might mean its referring to a different meaning instead
+		if (title === match && exact) {
+			setSelected?.(`${id}-${exact}`);
+			return;
+		}
 
-    if (title.length > 0) {
-      query.value = `define ${title}`;
-    }
-  }
+		if (title.length > 0) {
+			query.value = `define ${title}`;
+		}
+	}
 }
 </script>
 
 <template>
-  <div v-if="exact" class="dictionary flex-col">
+  <div v-if="exact" class="dictionary flex-col p-3.5">
     <div class="dictionaryWord" v-html="word.entry" @click="handleClick" />
   </div>
   <div v-else class="dictionary items-center gap-2">

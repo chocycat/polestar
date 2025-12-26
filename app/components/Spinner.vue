@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import { animate, createTimeline, eases, svg } from 'animejs';
+import { animate, createTimeline, eases, svg } from "animejs";
 
 const {
 	radius = 10,
 	strokeWidth = 3,
-	variant = 'accent',
+	variant = "accent",
 } = defineProps<{
 	radius?: number;
 	strokeWidth?: number;
-	variant?: 'accent' | 'brand';
+	variant?: "accent" | "brand";
 }>();
 
 const rradius = computed(() => radius + strokeWidth);
@@ -23,18 +23,18 @@ onMounted(() => {
 		rotate: 360,
 		duration: 1500,
 		loop: true,
-		ease: 'linear',
+		ease: "linear",
 	});
 
 	const drawable = svg.createDrawable(spinner.value);
 	const tl = createTimeline({ loop: true });
 
 	tl.add(drawable, {
-		draw: ['0 0.01', '0 0.75'],
+		draw: ["0 0.01", "0 0.75"],
 		duration: 750,
 		ease: eases.inOutCubic,
 	}).add(drawable, {
-		draw: ['0 0.75', '0.99 1'],
+		draw: ["0 0.75", "0.99 1"],
 		duration: 750,
 		ease: eases.inOutCubic,
 	});

@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { onKeyDown } from "@vueuse/core";
-import { animate, JSAnimation, spring, utils } from "animejs";
-import SearchInput from "./Input.vue";
-import SearchItemRenderer from "./Item/Renderer.vue";
+import { animate, type JSAnimation, spring, utils } from "animejs";
+import type SearchInput from "./Input.vue";
+import type SearchItemRenderer from "./Item/Renderer.vue";
 
 const { query, tab, results } = storeToRefs(useSearch());
 
@@ -17,132 +17,132 @@ const widthAnim = ref<JSAnimation | null>(null);
 
 window.$electron.onEvent("show", show);
 window.$electron.onEvent("hide", () => {
-  // if we're the origin of the hide, just return
-  // this will fire due to the blur event
-  if (selfHiding.value) return;
+	// if we're the origin of the hide, just return
+	// this will fire due to the blur event
+	if (selfHiding.value) return;
 
-  // this event might be triggered while we're leaving. in that case,
-  // it's supposed to be a toggle, so we should execute 'show'
-  state.value === "leaving" ? show() : hide();
+	// this event might be triggered while we're leaving. in that case,
+	// it's supposed to be a toggle, so we should execute 'show'
+	state.value === "leaving" ? show() : hide();
 });
 window.addEventListener("hide", () => {
-  // happens internally
-  selfHiding.value = true;
-  hide();
+	// happens internally
+	selfHiding.value = true;
+	hide();
 });
 window.addEventListener("clear-query", () => {
-  query.value = "";
+	query.value = "";
 });
 
 watch(
-  results,
-  () => {
-    if (!search.value) return;
+	results,
+	() => {
+		if (!search.value) return;
 
-    const { height } = search.value.getBoundingClientRect();
-    if (heightAnim.value) {
-      utils.cleanInlineStyles(heightAnim.value);
-      heightAnim.value.cancel();
-      heightAnim.value = null;
-    }
+		const { height } = search.value.getBoundingClientRect();
+		if (heightAnim.value) {
+			utils.cleanInlineStyles(heightAnim.value);
+			heightAnim.value.cancel();
+			heightAnim.value = null;
+		}
 
-    nextTick(() => {
-      // we need a nested one here because SearchItemCategory transitions are delayed by a tick
-      nextTick(() => {
-        if (!search.value) return;
+		nextTick(() => {
+			// we need a nested one here because SearchItemCategory transitions are delayed by a tick
+			nextTick(() => {
+				if (!search.value) return;
 
-        heightAnim.value = animate(search.value, {
-          height: { from: height, to: search.value.offsetHeight },
-          ease: spring({ bounce: 0.25, duration: 150 }),
-          onComplete: utils.cleanInlineStyles,
-        });
-      });
-    });
-  },
-  { deep: true, immediate: true, flush: "pre" }
+				heightAnim.value = animate(search.value, {
+					height: { from: height, to: search.value.offsetHeight },
+					ease: spring({ bounce: 0.25, duration: 150 }),
+					onComplete: utils.cleanInlineStyles,
+				});
+			});
+		});
+	},
+	{ deep: true, immediate: true, flush: "pre" },
 );
 
 watch(
-  tab,
-  () => {
-    if (!search.value) return;
+	tab,
+	() => {
+		if (!search.value) return;
 
-    const { width } = search.value.getBoundingClientRect();
-    if (widthAnim.value) {
-      utils.cleanInlineStyles(widthAnim.value);
-      widthAnim.value.cancel();
-      widthAnim.value = null;
-    }
+		const { width } = search.value.getBoundingClientRect();
+		if (widthAnim.value) {
+			utils.cleanInlineStyles(widthAnim.value);
+			widthAnim.value.cancel();
+			widthAnim.value = null;
+		}
 
-    nextTick(() => {
-      if (!search.value) return;
+		nextTick(() => {
+			if (!search.value) return;
 
-      widthAnim.value = animate(search.value, {
-        width: { from: width, to: search.value.offsetWidth },
-        ease: spring({ bounce: 0.25, duration: 150 }),
-        onComplete: utils.cleanInlineStyles,
-      });
-    });
-  },
-  { flush: "pre" }
+			widthAnim.value = animate(search.value, {
+				width: { from: width, to: search.value.offsetWidth },
+				ease: spring({ bounce: 0.25, duration: 150 }),
+				onComplete: utils.cleanInlineStyles,
+			});
+		});
+	},
+	{ flush: "pre" },
 );
 
 onKeyDown("Escape", (ev) => {
-  ev.preventDefault();
+	ev.preventDefault();
 
-  if (query.value.length > 0) {
-    query.value = "";
-    return;
-  }
+	if (query.value.length > 0) {
+		query.value = "";
+		return;
+	}
 
-  hide();
+	hide();
 });
 
 function show() {
-  if (!search.value) return;
+	if (!search.value) return;
 
-  if (state.value === "leaving") {
-    winAnim.value?.cancel();
-  }
+	if (state.value === "leaving") {
+		winAnim.value?.cancel();
+	}
 
-  searchInput.value?.focus();
-  state.value = "entering";
-  winAnim.value = animate(search.value, {
-    scale: { from: 0.9, to: 1, ease: spring({ duration: 250, bounce: 0.4 }) },
-    opacity: { from: 0, to: 1 },
-    filter: { from: "blur(32px)", to: "blur(0px)" },
-    duration: 250,
-    ease: "outExpo",
-    onComplete: (self) => {
-      state.value = "none";
-    },
-  });
+	searchInput.value?.focus();
+	state.value = "entering";
+	winAnim.value = animate(search.value, {
+		scale: { from: 0.9, to: 1, ease: spring({ duration: 250, bounce: 0.4 }) },
+		opacity: { from: 0, to: 1 },
+		filter: { from: "blur(32px)", to: "blur(0px)" },
+		duration: 250,
+		ease: "outExpo",
+		onComplete: (self) => {
+			state.value = "none";
+		},
+	});
 }
 
 function hide() {
-  if (!search.value) return;
+	if (!search.value) return;
 
-  query.value = "";
-  tab.value = "Quick Search";
-  state.value = "leaving";
+	query.value = "";
+	tab.value = "Quick Search";
+	state.value = "leaving";
 
-  winAnim.value = animate(search.value, {
-    scale: 0.9,
-    opacity: 0,
-    filter: "blur(16px)",
-    duration: 200,
-    ease: "outExpo",
-    onComplete: () => {
-      selfHiding.value = false;
-      window.$electron.hide();
-    },
-  });
+	winAnim.value = animate(search.value, {
+		scale: 0.9,
+		opacity: 0,
+		filter: "blur(16px)",
+		duration: 200,
+		ease: "outExpo",
+		onComplete: () => {
+			selfHiding.value = false;
+			window.$electron.hide();
+		},
+	});
 }
 
 function onBlur(ev: Event) {
-  setTimeout(() => {
-    (ev.target as HTMLInputElement).focus();
-  }, 0);
+	setTimeout(() => {
+		(ev.target as HTMLInputElement).focus();
+	}, 0);
 }
 </script>
 
@@ -152,16 +152,15 @@ function onBlur(ev: Event) {
       ref="search"
       class="flex flex-col relative h-full max-w-full max-h-screen bg-brand-background rounded-2xl my-8 pb-0 min-h-128px shadow-xl overflow-hidden w-450px"
     >
-      <div class="bar flex flex-col z-10 mx-4 pt-4 bg-brand-background rounded-b-xl">
+      <div
+        class="bar flex flex-col z-10 mx-4 pt-4 bg-brand-background rounded-b-xl"
+      >
         <SearchTab v-model="tab" class="px-3 mb-3" />
         <label
           for="searchInput"
           class="flex items-center gap-3 p-4 bg-brand-elevated rounded-xl shadow-xl"
         >
-          <Icon
-            name="ri:search-2-line"
-            class="text-xl text-brand-subtle"
-          />
+          <Icon name="ri:search-2-line" class="text-xl text-brand-subtle" />
 
           <SearchInput
             v-model="query"

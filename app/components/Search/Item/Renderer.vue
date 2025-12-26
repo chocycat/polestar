@@ -4,10 +4,11 @@ import { animate, spring } from "animejs";
 import type Scrollbar from "~/components/Scrollbar.vue";
 
 const { items, selectionMode = { type: "list" } } = defineProps<{
-  items: { id: string }[];
-  selectionMode?: { type: "list" } | { type: "grid"; columns: number };
+	items: { id: string }[];
+	selectionMode?: { type: "list" } | { type: "grid"; columns: number };
 }>();
 
+const { query } = storeToRefs(useSearch());
 const resultsRef = ref<InstanceType<typeof Scrollbar>>();
 const selection = ref<string | null>(null);
 const selectionEl = ref<HTMLElement>();
@@ -16,189 +17,198 @@ const navDirection = ref<"up" | "down">("down");
 const navStyle = ref<"normal" | "super">("normal");
 
 watch(
-  () => items,
-  () => {
-    selection.value = items[0]?.id || null;
-  },
-  { immediate: true }
+	() => items,
+	() => {
+		selection.value = items[0]?.id || null;
+	},
+	{ immediate: true },
 );
 
 watch(
-  selection,
-  () => {
-    if (!resultsRef.value) return;
+	[selection, query],
+	() => {
+		if (!resultsRef.value) return;
 
-    nextTick(async () => {
-      const selectedEl = resultsRef.value?.el?.querySelector<HTMLElement>(
-        `[data-id="${selection.value}"]`
-      );
+		nextTick(async () => {
+			const curr = selection.value;
+			const selectedEl = resultsRef.value?.el?.querySelector<HTMLElement>(
+				`[data-id="${curr}"]`,
+			);
 
-      if (selectedEl) {
-        // prevents the selection from slipping in case the TransitionGroup's
-        // FLIP transition hasn't finished yet
-        //
-        // *probably* happens because the FLIP transition creates overflow
-        // in some cases which would make the scrollTop larger than 0
-        // even though we don't have scrollable content
-        await new Promise<void>((resolve) => {
-          const hasTransition =
-            selectedEl!.classList.contains("searchResult-move");
-          if (hasTransition) {
-            selectedEl.addEventListener("transitionend", () => resolve(), {
-              once: true,
-            });
-          } else {
-            resolve();
-          }
-        });
+			if (selectedEl) {
+				// prevents the selection from slipping in case the TransitionGroup's
+				// FLIP transition hasn't finished yet
+				//
+				// *probably* happens because the FLIP transition creates overflow
+				// in some cases which would make the scrollTop larger than 0
+				// even though we don't have scrollable content
+				const anims = selectedEl
+					.getAnimations()
+					.filter((a) => a instanceof CSSTransition);
+				try {
+					if (anims.length > 0) {
+						await Promise.all(anims.map((x) => x.finished));
+					}
+				} catch {}
 
-        const ch = resultsRef.value!.el!.clientHeight;
-        const sh = resultsRef.value!.el!.scrollHeight;
+				// check if the selected item is still what we think it is
+				if (selection.value !== curr) return;
 
-        const p = selectedEl.parentElement!.offsetTop;
-        const et = selectedEl.offsetTop + p;
-        const eh = selectedEl.offsetHeight;
+				const ch = resultsRef.value!.el!.clientHeight;
+				const sh = resultsRef.value!.el!.scrollHeight;
 
-        let scrollTop: number;
-        // an item may be oversized, in these scenarios, we want to align it to
-        // the top instead of centering it
-        if (eh > ch) {
-          const st = resultsRef.value!.el!.scrollTop;
-          const eb = et + eh;
-          const os = Math.max(et, st);
-          const oe = Math.min(eb, st + ch);
-          const v = Math.max(0, oe - os);
-          const threshold = ch * 0.8;
-          const offset = 32;
+				const p = selectedEl.parentElement!.offsetTop;
+				const et = selectedEl.offsetTop + p;
+				const eh = selectedEl.offsetHeight;
 
-          if (v >= threshold) {
-            scrollTop = st;
-          } else {
-            // during super navigations, it's better to get to just get to the top
-            if (navDirection.value === "down" || navStyle.value === "super") {
-              scrollTop = Math.min(Math.max(et - offset, 0), sh - ch);
-            } else {
-              scrollTop = Math.min(Math.max(eb - ch + offset, 0), sh - ch);
-            }
-          }
-        } else {
-          scrollTop = Math.min(Math.max(et - ch / 2 + eh / 2, 0), sh - ch);
-        }
+				let scrollTop: number;
+				// an item may be oversized, in these scenarios, we want to align it to
+				// the top instead of centering it
+				if (eh > ch) {
+					const st = resultsRef.value!.el!.scrollTop;
+					const eb = et + eh;
+					const os = Math.max(et, st);
+					const oe = Math.min(eb, st + ch);
+					const v = Math.max(0, oe - os);
+					const threshold = ch * 0.8;
+					const offset = 32;
 
-        resultsRef.value!.scrollTo(scrollTop);
+					if (v >= threshold) {
+						scrollTop = st;
+					} else {
+						// during super navigations, it's better to get to just get to the top
+						if (navDirection.value === "down" || navStyle.value === "super") {
+							scrollTop = Math.min(Math.max(et - offset, 0), sh - ch);
+						} else {
+							scrollTop = Math.min(Math.max(eb - ch + offset, 0), sh - ch);
+						}
+					}
+				} else {
+					scrollTop = Math.min(Math.max(et - ch / 2 + eh / 2, 0), sh - ch);
+				}
 
-        if (selectionEl.value) {
-          const bounds = selectedEl.getBoundingClientRect();
-          animate(selectionEl.value!, {
-            top: {
-              to: et - scrollTop,
-              ease: spring({ duration: 150, bounce: 0.3 }),
-            },
-            left: {
-              to: selectedEl.offsetLeft + selectedEl.parentElement!.offsetLeft,
-              ease: spring({ duration: 150, bounce: 0.3 }),
-            },
-            width: bounds.width,
-            height: bounds.height,
-            ease: "outExpo",
-            duration: 50,
-          });
-        }
-      }
-    });
-  },
-  { flush: "post", immediate: true }
+				resultsRef.value!.scrollTo(scrollTop);
+
+				if (selectionEl.value) {
+					const bounds = selectedEl.getBoundingClientRect();
+					animate(selectionEl.value!, {
+						top: {
+							to: et - scrollTop,
+							ease: spring({ duration: 150, bounce: 0.3 }),
+						},
+						left: {
+							to: selectedEl.offsetLeft + selectedEl.parentElement!.offsetLeft,
+							ease: spring({ duration: 150, bounce: 0.3 }),
+						},
+						width: bounds.width,
+						height: bounds.height,
+						ease: "outExpo",
+						duration: 50,
+					});
+				}
+			}
+		});
+	},
+	{ flush: "post", immediate: true },
 );
 
 onKeyDown(["ArrowDown", "ArrowUp"], (event) => {
-  event.preventDefault();
-  const index = items.findIndex((x) => x.id === selection.value) || 0;
+	event.preventDefault();
+	const index = items.findIndex((x) => x.id === selection.value) || 0;
 
-  navStyle.value = event.shiftKey ? "super" : "normal";
-  navDirection.value = event.key === "ArrowDown" ? "down" : "up";
+	navStyle.value = event.shiftKey ? "super" : "normal";
+	navDirection.value = event.key === "ArrowDown" ? "down" : "up";
 
-  if (!event.shiftKey && resultsRef.value?.el) {
-    const selectedEl = resultsRef.value.el.querySelector<HTMLElement>(
-      `[data-id="${selection.value}"]`
-    );
+	if (event.ctrlKey) {
+		if (selectionMode.type === "list") {
+			selection.value =
+				items[event.key === "ArrowDown" ? items.length - 1 : 0]?.id || null;
+			return;
+		}
+	}
 
-    if (selectedEl) {
-      const container = resultsRef.value.el;
-      const ch = container.clientHeight;
-      const sh = container.scrollHeight;
-      const eh = selectedEl.offsetHeight;
+	if (!event.shiftKey && resultsRef.value?.el) {
+		const selectedEl = resultsRef.value.el.querySelector<HTMLElement>(
+			`[data-id="${selection.value}"]`,
+		);
 
-      if (eh > ch) {
-        const p = selectedEl.parentElement!.offsetTop;
-        const et = selectedEl.offsetTop + p;
-        const eb = et + eh;
+		if (selectedEl) {
+			const container = resultsRef.value.el;
+			const ch = container.clientHeight;
+			const sh = container.scrollHeight;
+			const eh = selectedEl.offsetHeight;
 
-        const currentScroll = container.scrollTop;
-        const vpb = currentScroll + ch;
+			if (eh > ch) {
+				const p = selectedEl.parentElement!.offsetTop;
+				const et = selectedEl.offsetTop + p;
+				const eb = et + eh;
 
-        const step = ch * 0.8;
-        const threshold = 20;
+				const currentScroll = container.scrollTop;
+				const vpb = currentScroll + ch;
 
-        let scrollTop: number | null = null;
-        if (event.key === "ArrowDown") {
-          const remainingBelow = eb - vpb;
-          if (remainingBelow > threshold) {
-            scrollTop = Math.min(currentScroll + step, sh - ch);
-          }
-        } else {
-          const remainingAbove = currentScroll - et;
-          if (remainingAbove > threshold) {
-            scrollTop = Math.max(currentScroll - step, 0);
-          }
-        }
+				const step = ch * 0.8;
+				const threshold = 20;
 
-        if (scrollTop !== null) {
-          resultsRef.value.scrollTo(scrollTop);
+				let scrollTop: number | null = null;
+				if (event.key === "ArrowDown") {
+					const remainingBelow = eb - vpb;
+					if (remainingBelow > threshold) {
+						scrollTop = Math.min(currentScroll + step, sh - ch);
+					}
+				} else {
+					const remainingAbove = currentScroll - et;
+					if (remainingAbove > threshold) {
+						scrollTop = Math.max(currentScroll - step, 0);
+					}
+				}
 
-          const bounds = selectedEl.getBoundingClientRect();
+				if (scrollTop !== null) {
+					resultsRef.value.scrollTo(scrollTop);
 
-          // copied from scrollbar for consistency
-          animate(selectionEl.value!, {
-            top: et - scrollTop,
-            width: bounds.width,
-            height: bounds.height,
-            ease: "outExpo",
-            duration: 300,
-          });
+					const bounds = selectedEl.getBoundingClientRect();
 
-          return;
-        }
-      }
-    }
-  }
+					// copied from scrollbar for consistency
+					animate(selectionEl.value!, {
+						top: et - scrollTop,
+						width: bounds.width,
+						height: bounds.height,
+						ease: "outExpo",
+						duration: 300,
+					});
 
-  let n: number = index;
-  if (selectionMode.type === "list") {
-    n = index + (event.key === "ArrowDown" ? 1 : -1);
-  } else if (selectionMode.type === "grid") {
-    const inc =
-      event.key === "ArrowDown"
-        ? selectionMode.columns
-        : -selectionMode.columns;
-    n = Math.min(items.length - 1, index + inc);
-  }
-  if (items[n] !== undefined) {
-    selection.value = items[n]?.id || null;
-  }
+					return;
+				}
+			}
+		}
+	}
+
+	let n: number = index;
+	if (selectionMode.type === "list") {
+		n = index + (event.key === "ArrowDown" ? 1 : -1);
+	} else if (selectionMode.type === "grid") {
+		const inc =
+			event.key === "ArrowDown"
+				? selectionMode.columns
+				: -selectionMode.columns;
+		n = Math.min(items.length - 1, index + inc);
+	}
+	if (items[n] !== undefined) {
+		selection.value = items[n]?.id || null;
+	}
 });
 
 onKeyDown(["ArrowLeft", "ArrowRight"], (event) => {
-  if (selectionMode.type !== "grid") return;
-  event.preventDefault();
-  const index = items.findIndex((x) => x.id === selection.value) || 0;
-  const n = index + (event.key === "ArrowRight" ? 1 : -1);
-  if (items[n] !== undefined) {
-    selection.value = items[n]?.id || null;
-  }
+	if (selectionMode.type !== "grid") return;
+	event.preventDefault();
+	const index = items.findIndex((x) => x.id === selection.value) || 0;
+	const n = index + (event.key === "ArrowRight" ? 1 : -1);
+	if (items[n] !== undefined) {
+		selection.value = items[n]?.id || null;
+	}
 });
 
 defineExpose({
-  scroll,
+	scroll,
 });
 </script>
 

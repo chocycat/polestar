@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 const { is = "div" } = defineProps<{
-  is?: string | Component;
-  skew: "right" | "left";
+	is?: string | Component;
+	skew: "right" | "left";
 }>();
 </script>
 

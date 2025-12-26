@@ -1,36 +1,43 @@
-import SearchItemDictionary from '~/components/Search/Item/Dictionary.vue';
+import SearchItemDictionary from "~/components/Search/Item/Dictionary.vue";
 
 export const useDictionary = (query: MaybeRef<string>): Ref<SearchResult[]> => {
-  query = toRef(query);
+	query = toRef(query);
 
-  const dictionary = ref<SearchResult[]>([]);
-  
-  watch(query, async () => {
-    const match = query.value.match(/define\s?['"]?(.*?)['"]?$/)?.[1]?.trim().toLowerCase();
+	const dictionary = ref<SearchResult[]>([]);
 
-    if (!match || match.length < 3) {
-      dictionary.value = [];
-      return;
-    }
+	watch(query, async () => {
+		const match = query.value
+			.match(/define\s?['"]?(.*?)['"]?$/)?.[1]
+			?.trim()
+			.toLowerCase();
 
-    if (match) {
-      let matches = (await window.$electron.dictionary(match, 6));
+		if (!match || match.length < 3) {
+			dictionary.value = [];
+			return;
+		}
 
-      const exacts = matches.filter((x) => x.title.toLowerCase() === match);
-      if (exacts.length > 0) {
-        matches = exacts;
-      }
+		if (match) {
+			let matches = await window.$electron.dictionary(match, 6);
 
-      dictionary.value = matches.map((x) => ({
-        id: `${x.id}-${exacts.length > 0}`,
-        component: h(SearchItemDictionary, { word: x, exact: exacts.length > 0, match })
-      }));
+			const exacts = matches.filter((x) => x.title.toLowerCase() === match);
+			if (exacts.length > 0) {
+				matches = exacts;
+			}
 
-      return;
-    }
+			dictionary.value = matches.map((x) => ({
+				id: `${x.id}-${exacts.length > 0}`,
+				component: h(SearchItemDictionary, {
+					word: x,
+					exact: exacts.length > 0,
+					match,
+				}),
+			}));
 
-    dictionary.value = [];
-  })
+			return;
+		}
 
-  return dictionary;
-}
+		dictionary.value = [];
+	});
+
+	return dictionary;
+};

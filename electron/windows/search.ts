@@ -1,36 +1,35 @@
 import { BrowserWindow } from "electron";
-import config from "../config";
-import { dockWindow } from "../xorg";
 import { Window, WINDOWS } from "../windows";
 import { join } from "node:path";
 
 export async function createSearch() {
-  const win = new BrowserWindow({
-    title: Window.Search,
-    transparent: true,
-    resizable: false,
-    width: 600,
-    height: 500,
-    webPreferences: {
-      preload: join(import.meta.dirname, "preload.js"),
-      devTools: true,
-      nodeIntegration: true,
-      webSecurity: false,
-    },
-  });
+	const win = new BrowserWindow({
+		title: Window.Search,
+		transparent: true,
+		resizable: false,
+		width: 600,
+		height: 500,
+		webPreferences: {
+			preload: join(import.meta.dirname, "preload.js"),
+			devTools: process.env.NODE_ENV === "development",
+			webSecurity: false,
+			nodeIntegration: true,
+		},
+	});
 
-  win.center();
-  win.removeMenu();
-  //win.webContents.openDevTools({ mode: "detach" });
-  win.loadURL(process.env.VITE_DEV_SERVER_URL as string + '/search');
+	win.center();
+	win.removeMenu();
+	win.loadURL((process.env.VITE_DEV_SERVER_URL as string) + "/search");
 
-  win.on('blur', () => {
-    win.webContents.send('hide');
-  })
+	win.webContents.openDevTools({ mode: "detach" });
 
-  WINDOWS[Window.Search] = win;
+	if (process.env.NODE_ENV === "production") {
+		win.on("blur", () => {
+			win.webContents.send("hide");
+		});
+	}
 
-  win.hide();
+	WINDOWS[Window.Search] = win;
 
-  return win;
+	return win;
 }

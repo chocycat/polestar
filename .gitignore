@@ -25,4 +25,6 @@ logs
 !.env.example
 
 resources/dictionary.db
-public/img/pfp.png
+
+public/img/avatar.png
+public/img/wallpaper/

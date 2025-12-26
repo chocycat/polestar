@@ -1,24 +1,34 @@
 import { BrowserWindow } from "electron";
 import { spawn } from "node:child_process";
 
-const daemon = spawn("cbd");
-let buf = "";
+export let available = true;
 
-daemon.stdout.on("data", (data) => {
-  buf += data.toString();
+function setup() {
+  const daemon = spawn("cbd");
+  let buf = "";
 
-  let lines = buf.split("\n");
-  buf = lines.pop() || "";
+  daemon.stdout.on("data", (data) => {
+    buf += data.toString();
 
-  lines.forEach((line: string) => {
-    try {
-      const data = JSON.parse(line.trim());
+    const lines = buf.split("\n");
+    buf = lines.pop() || "";
 
-      BrowserWindow.getAllWindows().forEach((w) =>
-        w.webContents.send("clipboard", data)
-      );
-    } catch (e) {
-      console.error("failed to parse notification:", e);
-    }
+    lines.forEach((line: string) => {
+      try {
+        const data = JSON.parse(line.trim());
+
+        BrowserWindow.getAllWindows().forEach((w) =>
+          w.webContents.send("clipboard", data)
+        );
+      } catch (e) {
+        console.error("failed to parse notification:", e);
+      }
+    });
   });
-});
+}
+
+try {
+  setup();
+} catch {
+  available = false;
+}

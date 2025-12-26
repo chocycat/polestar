@@ -1,28 +1,37 @@
 <script lang="ts" setup>
-import { onKeyDown } from '@vueuse/core';
-import type { Client } from '~/composables/awesome';
-import { ICON_OVERRIDES } from '~/composables/search/window';
+import { onKeyDown } from "@vueuse/core";
+import type { Client } from "~/composables/awesome";
+import { ICON_OVERRIDES } from "~/composables/search/window";
 
-const { client, selected } = defineProps<{ client: Client; selected?: boolean }>();
-const { enter, leave } = useScaleTransition({ baseScale: 0.75, blur: '8px', absolute: false });
+const { client, selected } = defineProps<{
+	client: Client;
+	selected?: boolean;
+}>();
+const { enter, leave } = useScaleTransition({
+	baseScale: 0.75,
+	blur: "8px",
+	absolute: false,
+});
 
 const icon = ref<string | null>(null);
 
 onBeforeMount(async () => {
-  icon.value = await window.$electron.resolveIcon(ICON_OVERRIDES[client.class] ?? client.class);
-  icon.value ??= await window.$electron.resolveIcon(client.class.toLowerCase());
-})
+	icon.value = await window.$electron.resolveIcon(
+		ICON_OVERRIDES[client.class] ?? client.class,
+	);
+	icon.value ??= await window.$electron.resolveIcon(client.class.toLowerCase());
+});
 
-onKeyDown('Enter', (ev) => {
-  if (selected) {
-    ev.preventDefault();
-    window.$electron.cmd(`echo "__goto_client(${client.id})" | awesome-client`)
-    
-    nextTick(() => {
-      window.dispatchEvent(new Event('hide'));
-    })
-  }
-})
+onKeyDown("Enter", (ev) => {
+	if (selected) {
+		ev.preventDefault();
+		window.$electron.cmd(`echo "__goto_client(${client.id})" | awesome-client`);
+
+		nextTick(() => {
+			window.dispatchEvent(new Event("hide"));
+		});
+	}
+});
 </script>
 
 <template>

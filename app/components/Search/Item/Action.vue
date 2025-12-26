@@ -1,78 +1,78 @@
 <script lang="ts" setup>
 import { isObject, onKeyDown, onKeyUp } from "@vueuse/core";
-import { animate, eases, JSAnimation } from "animejs";
+import { animate, eases, type JSAnimation } from "animejs";
 
 const {
-  iconType = "font",
-  selected,
-  callback,
-  closeOnCallback = true,
-  danger,
+	iconType = "font",
+	selected,
+	callback,
+	closeOnCallback = true,
+	danger,
 } = defineProps<{
-  name: string;
-  iconType?: "image" | "font";
-  icon?: string;
-  callback: () => void;
-  hintIcon?: string;
-  selected?: boolean;
-  danger?: boolean;
-  closeOnCallback?: boolean;
+	name: string;
+	iconType?: "image" | "font";
+	icon?: string;
+	callback: () => void;
+	hintIcon?: string;
+	selected?: boolean;
+	danger?: boolean;
+	closeOnCallback?: boolean;
 }>();
 const { enter, leave } = useScaleTransition({
-  baseScale: 0.75,
-  blur: "8px",
-  absolute: false,
+	baseScale: 0.75,
+	blur: "8px",
+	absolute: false,
 });
 
 const progress = ref(0);
 
-let holdAnimation = ref<JSAnimation | null>(null);
-let fallOffAnimation = ref<JSAnimation | null>(null);
+const holdAnimation = ref<JSAnimation | null>(null);
+const fallOffAnimation = ref<JSAnimation | null>(null);
 let isHolding = false;
 
 onKeyDown("Enter", (ev) => {
-  if (selected) {
-    ev.preventDefault();
-    if (danger) {
-      if (isHolding) return;
-      isHolding = true;
+	if (selected) {
+		ev.preventDefault();
+		if (danger) {
+			if (isHolding) return;
+			isHolding = true;
 
-      if (fallOffAnimation.value) fallOffAnimation.value.pause();
+			if (fallOffAnimation.value) fallOffAnimation.value.pause();
 
-      holdAnimation.value = animate(progress, {
-        value: 1,
-        duration: 1500,
-        ease: "inCubic",
-        onComplete: execute,
-      });
-    } else {
-      execute();
-    }
-  }
+			holdAnimation.value = animate(progress, {
+				value: 1,
+				duration: 1500,
+				ease: "inCubic",
+				onComplete: execute,
+			});
+		} else {
+			execute();
+		}
+	}
 });
 
 onKeyUp("Enter", (ev) => {
-  if (danger) {
-    if (holdAnimation.value) holdAnimation.value.pause();
+	if (danger) {
+		if (holdAnimation.value) holdAnimation.value.pause();
 
-    fallOffAnimation.value = animate(progress, {
-      value: 0,
-      duration: 400,
-      ease: "outExpo",
-    });
+		fallOffAnimation.value = animate(progress, {
+			value: 0,
+			duration: 400,
+			ease: "outExpo",
+		});
 
-    isHolding = false;
-  }
+		isHolding = false;
+	}
 });
 
 function execute() {
-  callback();
+	callback();
 
-  if (closeOnCallback) {
-    nextTick(() => {
-      window.dispatchEvent(new Event("hide"));
-    });
-  }
+	if (closeOnCallback) {
+		nextTick(() => {
+			window.dispatchEvent(new Event("hide"));
+		});
+	}
 }
 </script>
 
